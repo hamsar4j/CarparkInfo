@@ -1,8 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace CarparkInfo;
 
 public class CarparkInfo
-{
+{   
+    [Key]
     public string? CarparkNumber { get; set; }
+    
     public string? Address { get; set; }
     public float? XCoordinate { get; set; }
     public float? YCoordinate { get; set; }
