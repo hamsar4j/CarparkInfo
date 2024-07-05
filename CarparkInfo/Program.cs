@@ -9,6 +9,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<CarparkInfoContext>(options =>
     options.UseSqlite("Data Source=carparkInfo.db"));
+builder.Services.AddScoped<UnitOfWork>();
 
 var app = builder.Build();
 
@@ -21,37 +22,45 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// get all carparks
-app.MapGet("/allcarparks", async (CarparkInfoContext dbContext) =>
+// Insert data from csv into db
+app.MapGet("/insertcarparks", async (UnitOfWork unitOfWork) =>
     {
-        var CsvProcessor = new Csv2List();
-        var records = CsvProcessor.ReadCsv();
+        var csvProcessor = new Csv2List();
+        var records = csvProcessor.ReadCsv();
 
-        await dbContext.CarparkInfos.AddRangeAsync(records);
-        await dbContext.SaveChangesAsync();
-
+        foreach (var r in records)
+        {
+            unitOfWork.CarparkInfoRepository.Insert(r);
+        }
+        
+        unitOfWork.Save();
         return records;
     })
-    .WithName("GetAllCarparks")
+    .WithName("InsertCarparks")
     .WithOpenApi();
 
-// get carparks that have free parking
-app.MapGet("/freeparking", async (CarparkInfoContext dbContext) =>
+// Get all carparks
+app.MapGet("/allcarparks", async (UnitOfWork unitOfWork) =>
     {
-        var freeParkingRecords = await dbContext.CarparkInfos
-            .Where(x => x.FreeParking != "NO")
-            .ToListAsync();
+        var allRecords = unitOfWork.CarparkInfoRepository.Get();
+        return allRecords;
+    })
+    .WithName("AllCarparks")
+    .WithOpenApi();
+
+// Get carparks that have free parking
+app.MapGet("/freeparking", async (UnitOfWork unitOfWork) =>
+    {
+        var freeParkingRecords = unitOfWork.CarparkInfoRepository.Get(x => x.FreeParking != "NO");
         return freeParkingRecords;
     })
     .WithName("GetFreeParking")
     .WithOpenApi();
 
-// get carparks that have night parking
-app.MapGet("/nightparking", async (CarparkInfoContext dbContext) =>
+// Get carparks that have night parking
+app.MapGet("/nightparking", async (UnitOfWork unitOfWork) =>
     {
-        var nightParkingRecords = await dbContext.CarparkInfos
-            .Where(x => x.NightParking == "YES")
-            .ToListAsync();
+        var nightParkingRecords = unitOfWork.CarparkInfoRepository.Get(x => x.NightParking == "YES");
         return nightParkingRecords;
     })
     .WithName("GetNightParking")
@@ -59,12 +68,10 @@ app.MapGet("/nightparking", async (CarparkInfoContext dbContext) =>
 
 var requestMinGantryHeight = 3;
 
-// get carparks that are above the minimum gantry height
-app.MapGet("/gantryheight", async (CarparkInfoContext dbContext) =>
+// Get carparks that are above the minimum gantry height
+app.MapGet("/gantryheight", async (UnitOfWork unitOfWork) =>
     {
-        var gantryHeightRecords = await dbContext.CarparkInfos
-            .Where(x => x.GantryHeight >= requestMinGantryHeight)
-            .ToListAsync();
+        var gantryHeightRecords = unitOfWork.CarparkInfoRepository.Get(x => x.GantryHeight >= requestMinGantryHeight);
         return gantryHeightRecords;
     })
     .WithName("GetCarparksAboveMinGantryHeight")
@@ -72,12 +79,10 @@ app.MapGet("/gantryheight", async (CarparkInfoContext dbContext) =>
 
 var requestCarparkNumber = "AM43";
 
-// get carpark by carpark number
-app.MapGet("/carpark", async (CarparkInfoContext dbContext) =>
+// Get carpark by carpark number
+app.MapGet("/carpark", async (UnitOfWork unitOfWork) =>
     {
-        var carparkRecord = await dbContext.CarparkInfos
-            .Where(x => x.CarparkNumber == requestCarparkNumber)
-            .ToListAsync();
+        var carparkRecord = unitOfWork.CarparkInfoRepository.Get(x => x.CarparkNumber == requestCarparkNumber);
         return carparkRecord;
     })
     .WithName("GetCarpark")

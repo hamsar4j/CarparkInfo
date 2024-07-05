@@ -15,9 +15,5 @@ public class Csv2List
         var records = csv.GetRecords<CarparkInfo>().ToList();
 
         return records;
-        // foreach (var r in records)
-        // {
-        //     Console.WriteLine($"{r.CarparkNumber}, {r.Address}, {r.XCoordinate}, {r.YCoordinate}, {r.CarparkType}, {r.TypeOfParkingSystem}, {r.ShortTermParking}, {r.FreeParking}, {r.NightParking}, {r.CarparkDecks}, {r.GantryHeight}, {r.CarparkBasement}");
-        // }
     }
 }
