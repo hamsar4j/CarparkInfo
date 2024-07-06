@@ -1,6 +1,6 @@
 # Carpark Information Management
 
-This repo contains a codebase for an ASP.NET Core backend for carpark information management using Entity Framework Core and Generic Repository pattern.
+This repo contains the codebase for an ASP.NET Core backend for carpark information management using Entity Framework Core and Generic Repository pattern.
 
 ## Features:
 - CRUD operations for carpark data
