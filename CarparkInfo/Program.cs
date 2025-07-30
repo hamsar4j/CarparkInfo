@@ -9,7 +9,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<CarparkInfoContext>(options =>
     options.UseSqlite("Data Source=carparkInfo.db"));
-builder.Services.AddScoped<UnitOfWork>();
 
 var app = builder.Build();
 
@@ -23,65 +22,134 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Insert data from csv into db
-app.MapPost("/insertcarparks", async (UnitOfWork unitOfWork) =>
+app.MapPost("/insert-carparks", async (CarparkInfoContext context) =>
+{
+    try
     {
         var csvProcessor = new Csv2List();
         var records = csvProcessor.ReadCsv();
 
-        foreach (var r in records)
+        if (records == null || !records.Any())
         {
-            unitOfWork.CarparkInfoRepository.Insert(r);
+            return Results.BadRequest("No records found in the CSV file.");
         }
 
-        unitOfWork.Save();
-        return records;
-    })
+        await context.CarparkInfos.AddRangeAsync(records);
+        await context.SaveChangesAsync();
+
+        return Results.Ok(new { Message = $"Inserted {records.Count} records successfully.", Count = records.Count() });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Error inserting records: {ex.Message}");
+    }
+})
     .WithName("InsertCarparks")
     .WithOpenApi();
 
 // Get all carparks
-app.MapGet("/carparks", async (UnitOfWork unitOfWork) =>
+app.MapGet("/carparks", async (CarparkInfoContext context) =>
+{
+    try
     {
-        var allRecords = unitOfWork.CarparkInfoRepository.Get();
-        return allRecords;
-    })
+        var allRecords = await context.CarparkInfos.ToListAsync();
+        return Results.Ok(allRecords);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Error retrieving records: {ex.Message}");
+    }
+})
     .WithName("GetAllCarparks")
     .WithOpenApi();
 
 // Get carpark by carpark number
-app.MapGet("/carpark/{id}", async (UnitOfWork unitOfWork, string id) =>
+app.MapGet("/carparks/{id}", async (CarparkInfoContext context, string id) =>
+{
+    try
     {
-        var carparkRecord = unitOfWork.CarparkInfoRepository.Get(x => x.CarparkNumber == id);
-        return carparkRecord;
-    })
+        if (string.IsNullOrEmpty(id))
+        {
+            return Results.BadRequest("Carpark number cannot be null or empty.");
+        }
+
+        var carparkRecord = await context.CarparkInfos
+            .Where(x => x.CarparkNumber == id)
+            .FirstOrDefaultAsync();
+
+        if (carparkRecord == null)
+        {
+            return Results.NotFound($"Carpark with number {id} not found.");
+        }
+
+        return Results.Ok(carparkRecord);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Error retrieving carpark: {ex.Message}");
+    }
+})
     .WithName("GetCarparkByNumber")
     .WithOpenApi();
 
 // Get carparks that have free parking
-app.MapGet("/freeparking", async (UnitOfWork unitOfWork) =>
+app.MapGet("/carparks/free-parking", async (CarparkInfoContext context) =>
     {
-        var freeParkingRecords = unitOfWork.CarparkInfoRepository.Get(x => x.FreeParking != "NO");
-        return freeParkingRecords;
+        try
+        {
+            var freeParkingRecords = await context.CarparkInfos
+                .Where(x => x.FreeParking != "NO")
+                .ToListAsync();
+
+            return Results.Ok(freeParkingRecords);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem($"Error retrieving free parking records: {ex.Message}");
+        }
     })
     .WithName("GetFreeParking")
     .WithOpenApi();
 
 // Get carparks that have night parking
-app.MapGet("/nightparking", async (UnitOfWork unitOfWork) =>
+app.MapGet("/carparks/night-parking", async (CarparkInfoContext context) =>
     {
-        var nightParkingRecords = unitOfWork.CarparkInfoRepository.Get(x => x.NightParking == "YES");
-        return nightParkingRecords;
+        try
+        {
+            var nightParkingRecords = await context.CarparkInfos
+                .Where(x => x.NightParking == "YES")
+                .ToListAsync();
+
+            return Results.Ok(nightParkingRecords);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem($"Error retrieving night parking records: {ex.Message}");
+        }
     })
     .WithName("GetNightParking")
     .WithOpenApi();
 
-var requestMinGantryHeight = 3;
-
 // Get carparks that are above the minimum gantry height
-app.MapGet("/gantryheight", async (UnitOfWork unitOfWork) =>
+app.MapGet("/carparks/gantry-height", async (CarparkInfoContext context, float minGantryHeight = 3) =>
     {
-        var gantryHeightRecords = unitOfWork.CarparkInfoRepository.Get(x => x.GantryHeight >= requestMinGantryHeight);
-        return gantryHeightRecords;
+        try
+        {
+            if (minGantryHeight <= 0)
+            {
+                return Results.BadRequest("Minimum gantry height must be greater than zero.");
+            }
+
+            var gantryHeightRecords = await context.CarparkInfos
+                .Where(x => x.GantryHeight >= minGantryHeight)
+                .ToListAsync();
+
+            return Results.Ok(gantryHeightRecords);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem($"Error retrieving carparks by gantry height: {ex.Message}");
+        }
     })
     .WithName("GetCarparksAboveMinGantryHeight")
     .WithOpenApi();
