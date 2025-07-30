@@ -2,16 +2,19 @@
 using CarparkInfoApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace CarparkInfoApi.Migrations
+namespace CarparkInfoApi.Data.Migrations
 {
     [DbContext(typeof(CarparkInfoContext))]
-    partial class CarparkInfoContextModelSnapshot : ModelSnapshot
+    [Migration("20250730102556_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.7");

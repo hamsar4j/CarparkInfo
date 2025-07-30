@@ -8,3 +8,10 @@ This repo contains the codebase for an ASP.NET Core backend for carpark informat
 - Entity Framework Core with SQLite database
 - CSV data import functionality
 - Swagger UI for API documentation and testing
+
+### Steps to create SQLite DB
+
+```bash
+dotnet ef migrations add InitialCreate --output-dir Data/Migrations
+dotnet ef database update
+```

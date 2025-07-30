@@ -3,11 +3,8 @@ using CarparkInfoApi.Models;
 
 namespace CarparkInfoApi.Data;
 
-public class CarparkInfoContext : DbContext
+public class CarparkInfoContext(DbContextOptions<CarparkInfoContext> options) : DbContext(options)
 {
     public DbSet<CarparkInfo> CarparkInfos { get; set; }
 
-    public CarparkInfoContext(DbContextOptions<CarparkInfoContext> options) : base(options)
-    {
-    }
 }

@@ -3,13 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using CarparkInfoApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+var connString = builder.Configuration.GetConnectionString("CarparkInfoDb");
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<CarparkInfoContext>(options =>
-    options.UseSqlite("Data Source=carparkInfo.db"));
+    options.UseSqlite(connString));
 
 var app = builder.Build();
 
@@ -23,7 +24,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Insert data from csv into db
-app.MapPost("/insert-carparks", async (CarparkInfoContext context) =>
+app.MapPost("/carparks/insert-carparks", async (CarparkInfoContext context) =>
 {
     try
     {
