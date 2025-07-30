@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using CarparkInfoApi.Models;
 
-namespace CarparkInfo;
+namespace CarparkInfoApi.Data;
 
 public class CarparkInfoContext : DbContext
 {

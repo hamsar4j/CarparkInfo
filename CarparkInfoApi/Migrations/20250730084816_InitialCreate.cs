@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace CarparkInfo.Migrations
+namespace CarparkInfoApi.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

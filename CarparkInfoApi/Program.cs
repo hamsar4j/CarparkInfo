@@ -1,5 +1,6 @@
-using CarparkInfo;
+using CarparkInfoApi;
 using Microsoft.EntityFrameworkCore;
+using CarparkInfoApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

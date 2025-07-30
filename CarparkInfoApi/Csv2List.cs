@@ -1,7 +1,9 @@
 using System.Globalization;
 using CsvHelper;
+using CarparkInfoApi.Models;
+using CarparkInfoApi.Mappings;
 
-namespace CarparkInfo;
+namespace CarparkInfoApi;
 
 public class Csv2List
 {

@@ -1,6 +1,7 @@
 using CsvHelper.Configuration;
+using CarparkInfoApi.Models;
 
-namespace CarparkInfo;
+namespace CarparkInfoApi.Mappings;
 
 public class CarparkInfoMap : ClassMap<CarparkInfo>
 {

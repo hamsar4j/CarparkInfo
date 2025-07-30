@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace CarparkInfo;
+namespace CarparkInfoApi.Models;
 
 public record class CarparkInfo
 {
