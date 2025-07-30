@@ -131,7 +131,7 @@ app.MapGet("/carparks/night-parking", async (CarparkInfoContext context) =>
     .WithOpenApi();
 
 // Get carparks that are above the minimum gantry height
-app.MapGet("/carparks/gantry-height", async (CarparkInfoContext context, float minGantryHeight = 3) =>
+app.MapGet("/carparks/gantry-height/{minGantryHeight}", async (CarparkInfoContext context, float minGantryHeight) =>
     {
         try
         {
