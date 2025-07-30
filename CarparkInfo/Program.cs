@@ -23,7 +23,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Insert data from csv into db
-app.MapGet("/insertcarparks", async (UnitOfWork unitOfWork) =>
+app.MapPost("/insertcarparks", async (UnitOfWork unitOfWork) =>
     {
         var csvProcessor = new Csv2List();
         var records = csvProcessor.ReadCsv();
@@ -32,7 +32,7 @@ app.MapGet("/insertcarparks", async (UnitOfWork unitOfWork) =>
         {
             unitOfWork.CarparkInfoRepository.Insert(r);
         }
-        
+
         unitOfWork.Save();
         return records;
     })
@@ -40,12 +40,21 @@ app.MapGet("/insertcarparks", async (UnitOfWork unitOfWork) =>
     .WithOpenApi();
 
 // Get all carparks
-app.MapGet("/allcarparks", async (UnitOfWork unitOfWork) =>
+app.MapGet("/carparks", async (UnitOfWork unitOfWork) =>
     {
         var allRecords = unitOfWork.CarparkInfoRepository.Get();
         return allRecords;
     })
-    .WithName("AllCarparks")
+    .WithName("GetAllCarparks")
+    .WithOpenApi();
+
+// Get carpark by carpark number
+app.MapGet("/carpark/{id}", async (UnitOfWork unitOfWork, string id) =>
+    {
+        var carparkRecord = unitOfWork.CarparkInfoRepository.Get(x => x.CarparkNumber == id);
+        return carparkRecord;
+    })
+    .WithName("GetCarparkByNumber")
     .WithOpenApi();
 
 // Get carparks that have free parking
@@ -75,17 +84,6 @@ app.MapGet("/gantryheight", async (UnitOfWork unitOfWork) =>
         return gantryHeightRecords;
     })
     .WithName("GetCarparksAboveMinGantryHeight")
-    .WithOpenApi();
-
-var requestCarparkNumber = "AM43";
-
-// Get carpark by carpark number
-app.MapGet("/carpark", async (UnitOfWork unitOfWork) =>
-    {
-        var carparkRecord = unitOfWork.CarparkInfoRepository.Get(x => x.CarparkNumber == requestCarparkNumber);
-        return carparkRecord;
-    })
-    .WithName("GetCarpark")
     .WithOpenApi();
 
 app.Run();
